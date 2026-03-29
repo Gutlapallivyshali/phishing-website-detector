@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phishing Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>🔐 Phishing Detector</h1>
+    <form action="/predict" method="post">
+        <input type="text" name="url" placeholder="Enter URL..." required>
+        <button type="submit">Check</button>
+    </form>
+    {% if prediction_text %}
+        <div class="result">{{ prediction_text }}</div>
+    {% endif %}
+</div>
+</body>
+</html>
