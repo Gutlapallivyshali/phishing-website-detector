@@ -1,23 +1,39 @@
-from flask import Flask, request, render_template
-import pickle
 
-# Load your model and vectorizer
-model = pickle.load(open('phishing_mnb.pkl', 'rb'))  # or phishing.pkl if you want
-vectorizer = pickle.load(open('vectorizer.pkl', 'rb'))
+from flask import Flask, render_template, request
+import pickle
+import re
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+vector = pickle.load(open("vectorizer.pkl", 'rb'))
+model = pickle.load(open("phishing.pkl", 'rb'))
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    url = request.form['url']
-    data = vectorizer.transform([url])
-    prediction = model.predict(data)[0]
-    result = "⚠️ Phishing Website" if prediction == 1 else "✅ Safe Website"
-    return render_template('index.html', prediction_text=result)
 
-if __name__ == "__main__":
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    if request.method == "POST":
+        url = request.form['url']
+        # print(url)
+        
+        cleaned_url = re.sub(r'^https?://(www\.)?', '', url)
+        # print(cleaned_url)
+        
+        predict = model.predict(vector.transform([cleaned_url]))[0]
+        # print(predict)
+        
+        if predict == 'bad':
+            predict = "This is a Phishing website !!"
+        elif predict == 'good':
+            predict = "This is healthy and good website !!"
+        else:
+            predict = "Something went wrong !!"
+        
+        return render_template("index.html", predict=predict)
+    
+    else:
+        return render_template("index.html")
+
+
+
+if __name__=="__main__":
     app.run(debug=True)
